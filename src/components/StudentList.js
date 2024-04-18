@@ -20,9 +20,16 @@ import StudentTable from './StudentTable.js'
 const DATASTORE_OVERVIEW = {
     dataStore: {
         resource: `dataStore/${DATASTORE_NAME}`,
-        params: {
-            fields: '.',
-        },
+        params: ({value, property}) => {
+            return value ? ({
+                fields: '.',
+                filter: `${property}:ilike:${value}`
+
+            }) : ({
+                fields: '.',
+
+            })
+        }
     },
 }
 
@@ -30,23 +37,24 @@ const DATASTORE_OVERVIEW = {
 const DELETE_MUTATION = {}
 
 const FilterSelection = ({ refetch }) => {
-    // const [filter, setFilter] = useState(null)
+    const [filter, setFilter] = useState(null)
+
     return (
         <div className={styles.filterSelect}>
             <SingleSelect
                 prefix={'Filter option'}
-                selected="country"
-                onChange={() => {}}
+                selected={filter?.property}
+                onChange={({ selected }) => { setFilter({ property: selected }) }}
             >
                 <SingleSelectOption
                     label={i18n.t('Country of residence')}
                     value="country"
-                    className={styles.filterField}
+                    className={styles.filterField}  
                 />
                 <SingleSelectOption label={i18n.t('Name')} value="name" />
             </SingleSelect>
-            <InputField value="o" className={styles.filterField}></InputField>
-            <Button primary onClick={refetch}>
+            <InputField value={filter?.value} onChange={({ value }) => { setFilter(prev => ({ ...prev, value })) }} className={styles.filterField}>filter</InputField>
+            <Button primary onClick={() => refetch(filter)}>
                 {i18n.t('Search for participants')}
             </Button>
         </div>
@@ -62,7 +70,7 @@ const StudentList = () => {
         DATASTORE_OVERVIEW,
         { lazy: true }
     )
-    const deleteMutation = () => {} // @TODO: replace with something like  `const [deleteMutation] = useDataMutation(DELETE_MUTATION)`
+    const deleteMutation = () => { } // @TODO: replace with something like  `const [deleteMutation] = useDataMutation(DELETE_MUTATION)`
     const [sharingMutation] = useUpdateSharing() // @TODO: you need to implement a custom hook returning a mutation
 
     const [addModalOpen, setAddModalOpen] = useState(false)
